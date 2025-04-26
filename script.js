@@ -1,122 +1,166 @@
-body {
-    font-family: sans-serif;
-    line-height: 1.6;
-    margin: 20px;
-    background-color: #f4f4f4;
-    color: #333;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Get DOM Elements ---
+    const logDateInput = document.getElementById('log-date');
+    const logFeelings = document.getElementById('log-feelings');
+    const logPlace = document.getElementById('log-place');
+    const logFood = document.getElementById('log-food');
+    const ratingContainer = document.getElementById('log-rating');
+    const ratingStars = ratingContainer.querySelectorAll('i');
+    const ratingValueInput = document.getElementById('rating-value');
+    const saveButton = document.getElementById('save-button');
+    const saveStatus = document.getElementById('save-status');
+    const loadStatus = document.getElementById('load-status');
 
-h1 {
-    text-align: center;
-    color: #333;
-}
+    const STORAGE_PREFIX = "dailyLog_"; // Prefix for localStorage keys
 
-#log-form {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    max-width: 600px;
-    margin: 20px auto;
-}
+    // --- Star Rating Logic ---
+    function updateStarRating(value) {
+        const rating = parseInt(value) || 0; // Ensure it's a number, default 0
+        ratingValueInput.value = rating;
+        ratingStars.forEach(star => {
+            const starValue = parseInt(star.getAttribute('data-value'));
+            if (starValue <= rating) {
+                star.classList.remove('fa-regular');
+                star.classList.add('fa-solid', 'selected'); // Use solid icon
+            } else {
+                star.classList.remove('fa-solid', 'selected');
+                star.classList.add('fa-regular'); // Use regular icon
+            }
+        });
+    }
 
-.form-group {
-    margin-bottom: 20px;
-}
+    ratingStars.forEach(star => {
+        // --- Hover effects ---
+        star.addEventListener('mouseover', () => {
+            const hoverValue = parseInt(star.getAttribute('data-value'));
+            ratingStars.forEach((s, index) => {
+                 if (index < hoverValue) { // Apply hover class up to the hovered star
+                     s.classList.add('hover');
+                 } else {
+                     s.classList.remove('hover');
+                 }
+            });
+             // Ensure selected stays filled during hover
+             ratingStars.forEach(s => {
+                 if(s.classList.contains('selected')) {
+                     s.classList.remove('hover'); // remove hover if selected
+                 } else {
+                      // if not selected, allow hover to make it yellow
+                      if(parseInt(s.getAttribute('data-value')) <= hoverValue) {
+                          s.classList.add('hover')
+                      }
+                 }
+             })
+        });
+        star.addEventListener('mouseout', () => {
+             ratingStars.forEach(s => s.classList.remove('hover'));
+        });
+        // --- Click to select ---
+        star.addEventListener('click', () => {
+            const clickedValue = parseInt(star.getAttribute('data-value'));
+            updateStarRating(clickedValue);
+        });
+    });
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
-}
+    // --- Data Collection ---
+    function collectFormData() {
+        return {
+            // date is handled by the key, but can include if needed
+            feelings: logFeelings.value.trim(),
+            place: logPlace.value.trim(),
+            food: logFood.value.trim(),
+            rating: parseInt(ratingValueInput.value) || 0,
+            lastUpdated: new Date().toISOString()
+        };
+    }
 
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Prevents padding from increasing element size */
-    font-size: 1rem; /* Ensure consistent font size */
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-hr {
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 25px 0;
-}
-
-/* Star Rating Styles */
-.star-rating {
-    display: inline-block;
-}
-
-.star-rating i {
-    font-size: 1.5em;
-    color: #ccc;
-    cursor: pointer;
-    padding: 0 2px;
-    transition: color 0.2s ease-in-out;
-}
-
-.star-rating:hover i,
-.star-rating i.hover {
-    color: #f8d70a;
-}
-
-.star-rating i.selected {
-    color: #f5c518; /* Filled star color */
-}
-.star-rating i.selected ~ i {
-     /* color: #ccc; */ /* Uncomment this if you want stars AFTER selection to be grey */
-}
+     // --- Clear Form Fields ---
+    function clearForm() {
+        logFeelings.value = '';
+        logPlace.value = '';
+        logFood.value = '';
+        updateStarRating(0); // Reset stars
+        saveStatus.textContent = ''; // Clear save status too
+    }
 
 
-/* Button Style */
-#save-button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s ease;
-    display: block; /* Make it full width */
-    width: 100%;
-    margin-top: 10px;
-}
+    // --- Load Data from Local Storage ---
+    function loadDataForDate(dateString) {
+        if (!dateString) {
+            loadStatus.textContent = 'Please select a date.';
+            clearForm();
+            return;
+        }
+        const key = STORAGE_PREFIX + dateString;
+        loadStatus.textContent = 'Loading...';
+        saveStatus.textContent = ''; // Clear save status on load
 
-#save-button:hover {
-    background-color: #0056b3;
-}
+        try {
+            const storedData = localStorage.getItem(key);
+            if (storedData) {
+                const data = JSON.parse(storedData);
+                logFeelings.value = data.feelings || '';
+                logPlace.value = data.place || '';
+                logFood.value = data.food || '';
+                updateStarRating(data.rating || 0);
+                loadStatus.textContent = `Entry loaded (Last saved: ${data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : 'N/A'})`;
+            } else {
+                clearForm(); // Clear form if no data found for this date
+                loadStatus.textContent = 'No entry found for this date. Create one!';
+            }
+        } catch (error) {
+            console.error("Error loading data from localStorage:", error);
+            loadStatus.textContent = 'Error loading entry.';
+            clearForm(); // Clear form on error
+        }
+    }
 
-/* Status Message Styles */
-.status-text {
-    margin-top: 8px;
-    font-size: 0.9em;
-    min-height: 1.1em; /* Prevent layout shifts */
-    text-align: left; /* Align status under date picker */
-    color: #666;
-}
-#save-status {
-     text-align: center; /* Center save status under button */
-     margin-top: 15px;
-}
+    // --- Save Data to Local Storage ---
+    function saveDataForDate() {
+        const dateString = logDateInput.value;
+        if (!dateString) {
+            saveStatus.textContent = 'Please select a date before saving.';
+            return; // Don't save without a date
+        }
 
-/* Warning Message Style */
-.storage-warning {
-    margin-top: 25px;
-    font-size: 0.85em;
-    color: #777;
-    text-align: center;
-    border-top: 1px dashed #ddd;
-    padding-top: 15px;
-}
+        const key = STORAGE_PREFIX + dateString;
+        const currentData = collectFormData();
+        saveStatus.textContent = 'Saving...';
+
+        try {
+            localStorage.setItem(key, JSON.stringify(currentData));
+            // Use setTimeout to make the "Saved" message more noticeable
+            setTimeout(() => {
+                 saveStatus.textContent = `Entry saved for ${dateString} at ${new Date().toLocaleTimeString()}`;
+                 loadStatus.textContent = ''; // Clear loading status after save
+             }, 300); // Short delay
+
+        } catch (error) {
+            console.error("Error saving data to localStorage:", error);
+            // Handle potential storage errors (like quota exceeded)
+            if (error.name === 'QuotaExceededError') {
+                 saveStatus.textContent = 'Error: Storage limit reached. Cannot save.';
+            } else {
+                 saveStatus.textContent = 'Error saving entry.';
+            }
+        }
+    }
+
+    // --- Event Listeners ---
+    // Load data when the date changes
+    logDateInput.addEventListener('change', () => {
+        loadDataForDate(logDateInput.value);
+    });
+
+    // Save data when the button is clicked
+    saveButton.addEventListener('click', saveDataForDate);
+
+    // --- Initial Setup ---
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    logDateInput.value = today;
+
+    // Load data for the initial date (today)
+    loadDataForDate(today);
+
+});
