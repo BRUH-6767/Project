@@ -3,6 +3,7 @@ body {
     line-height: 1.6;
     margin: 20px;
     background-color: #f4f4f4;
+    color: #333;
 }
 
 h1 {
@@ -38,46 +39,84 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box; /* Prevents padding from increasing element size */
+    font-size: 1rem; /* Ensure consistent font size */
 }
 
 .form-group textarea {
-    resize: vertical; /* Allow vertical resizing */
+    resize: vertical;
     min-height: 80px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 25px 0;
 }
 
 /* Star Rating Styles */
 .star-rating {
-    display: inline-block; /* Align stars horizontally */
+    display: inline-block;
 }
 
 .star-rating i {
-    font-size: 1.5em; /* Adjust star size */
-    color: #ccc;      /* Default star color (empty) */
+    font-size: 1.5em;
+    color: #ccc;
     cursor: pointer;
-    padding: 0 2px;   /* Spacing between stars */
+    padding: 0 2px;
     transition: color 0.2s ease-in-out;
 }
 
-/* Styles for stars when hovered or selected */
 .star-rating:hover i,
-.star-rating i.hover { /* Hover effect */
-    color: #f8d70a; /* Yellow color on hover */
+.star-rating i.hover {
+    color: #f8d70a;
 }
 
-.star-rating i.selected,
-.star-rating i.selected ~ i { /* Keep selected yellow, make following grey */
-     /* color: #ccc; */ /* This line makes stars AFTER selection grey - uncomment if desired */
-}
 .star-rating i.selected {
-    color: #f5c518; /* Slightly darker yellow when selected */
+    color: #f5c518; /* Filled star color */
+}
+.star-rating i.selected ~ i {
+     /* color: #ccc; */ /* Uncomment this if you want stars AFTER selection to be grey */
 }
 
 
-/* Save Status Indicator */
+/* Button Style */
+#save-button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+    display: block; /* Make it full width */
+    width: 100%;
+    margin-top: 10px;
+}
+
+#save-button:hover {
+    background-color: #0056b3;
+}
+
+/* Status Message Styles */
+.status-text {
+    margin-top: 8px;
+    font-size: 0.9em;
+    min-height: 1.1em; /* Prevent layout shifts */
+    text-align: left; /* Align status under date picker */
+    color: #666;
+}
 #save-status {
-    margin-top: 15px;
-    font-style: italic;
-    color: #888;
-    min-height: 1.2em; /* Prevent layout shift when text appears */
-    text-align: right;
+     text-align: center; /* Center save status under button */
+     margin-top: 15px;
+}
+
+/* Warning Message Style */
+.storage-warning {
+    margin-top: 25px;
+    font-size: 0.85em;
+    color: #777;
+    text-align: center;
+    border-top: 1px dashed #ddd;
+    padding-top: 15px;
 }
