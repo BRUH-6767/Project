@@ -12,29 +12,29 @@
     <h1>My Daily Log</h1>
     <div id="log-form">
         <div class="form-group">
-            <label for="log-date">Date:</label>
+            <label for="log-date">Select Date:</label>
             <input type="date" id="log-date" name="log_date">
-        </div>
+            <div id="load-status" class="status-text"></div> </div>
 
-        <div class="form-group">
+        <hr> <div class="form-group">
             <label for="log-feelings">How I felt:</label>
-            <textarea id="log-feelings" name="log_feelings" rows="4"></textarea>
+            <textarea id="log-feelings" name="log_feelings" rows="4" placeholder="Describe your feelings..."></textarea>
         </div>
 
         <div class="form-group">
             <label for="log-place">Place Visited:</label>
-            <input type="text" id="log-place" name="log_place">
+            <input type="text" id="log-place" name="log_place" placeholder="Where did you go?">
         </div>
 
         <div class="form-group">
             <label for="log-food">Food Eaten:</label>
-            <input type="text" id="log-food" name="log_food">
+            <input type="text" id="log-food" name="log_food" placeholder="What did you eat?">
         </div>
 
         <div class="form-group">
-            <label>Rating:</label>
+            <label>Rate your day:</label>
             <div class="star-rating" id="log-rating">
-                <i class="fa-regular fa-star" data-value="1"></i>
+                 <i class="fa-regular fa-star" data-value="1"></i>
                  <i class="fa-regular fa-star" data-value="2"></i>
                  <i class="fa-regular fa-star" data-value="3"></i>
                  <i class="fa-regular fa-star" data-value="4"></i>
@@ -43,7 +43,10 @@
              <input type="hidden" id="rating-value" name="log_rating_value" value="0">
         </div>
 
-         <div id="save-status"></div>
+         <button id="save-button" type="button">Save Entry for this Date</button>
+         <div id="save-status" class="status-text"></div> <p class="storage-warning">
+             <strong>Note:</strong> Data is saved locally in this browser only. Clearing browser data will remove your entries.
+         </p>
 
     </div>
 
